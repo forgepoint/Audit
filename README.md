@@ -1,6 +1,5 @@
 # GhostBusters Cyber Risk Assessment 
-# Copyright @2020 All Rights Reserved 
-# Updated by Shane D. Shook 
+## Copyright (c)2020, All Rights Reserved 
 
 The Cyber Risk Assessment leverages native Operating System capabilities to collect information that represents exigent and hygiene risks in the configuration and use of servers, workstations, and laptops/tablets that organizational processes depend upon.
 
@@ -10,4 +9,4 @@ Unlike traditional assessments that are based on executive questionnaires, or vu
 
 The Cyber Risk Assessment is intended to produce a baseline from evidence, of operational risk in context (exigent/hygiene factor(s) x impact).
 
-### 07/28/2020
+### Updated by Shane D. Shook @07/28/2020
