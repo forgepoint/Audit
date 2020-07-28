@@ -1,5 +1,3 @@
-#!/bin/sh
-
 #!/bin/ksh
 # Cyber Risk Assessment (CRA) MAC/Linux Version - Copyright @2018 All Rights Reserved
 # Updated by Brandon M. Pimentel
