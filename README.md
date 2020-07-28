@@ -9,4 +9,18 @@ Unlike traditional assessments that are based on executive questionnaires, or vu
 
 The Cyber Risk Assessment is intended to produce a baseline from evidence, of operational risk in context (exigent/hygiene factor(s) x impact).
 
+The process is simple:
+
+1) Copy the requisite script to each endpoint (server, desktop, laptop) to be evaluated and execute with administrative rights.  
+
+2) Collect the resulting zip file output from each endpoint.
+
+3) Provide the zip files for analysis.
+
+
+  Note1: The AD script needs only to run from one endpoint against the domain controller, if the domain has several DC's then each should be addressed by the script for complete results.
+
+  Note2: AD GPO logon scripts with scheduled tasks to execute the collection script and to retrieve the results are often best in flexible work hours environments.
+
+
 ### Updated by Shane D. Shook @07/28/2020
