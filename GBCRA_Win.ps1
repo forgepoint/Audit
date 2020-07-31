@@ -22,8 +22,8 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 
 # Check if marker file exists, used to control script execution when linked to GPO/Login 
-# If (-Not (Test-Path $outputfile.trim() )) # REMOVED FOR FURTHER TESTING SDS
-# {
+If (-Not (Test-Path $outputfile.trim() )) 
+{
 
 # PREPARATION
 
@@ -677,7 +677,7 @@ select @{Name='Computername';Expression={ $env:COMPUTERNAME }},
 @{Name='ProcessName';Expression={ $_.processname }} | 
     where-object {$_.LogonType -like '3' -or $_.LogonType -like '4' -or $_.LogonType -like '8' -or $_.LogonType -like '10'} | 
     where-object {$_.IpAddress -notlike '-'} |
-	where-object {$_.processname -notlike '-'} 
+	where-object {$_.processname -notlike '-'} | 
 export-csv -path $localpath\"$env:computername"-remotelogons.csv -Encoding UTF8 -NoTypeInformation
 
 ## SERVICES
@@ -748,8 +748,6 @@ $ErrorActionPreference = 'SilentlyContinue'
 Move-Item $localpath\*.zip $networkshare -Force
 
 # REMOVE Files and Folder
-#invoke-command -scriptblock {del $localpath\*.csv}
-#invoke-command -scriptblock {rmdir $localpath}
 $ErrorActionPreference = 'SilentlyContinue'
 Remove-Item  $localpath  -Recurse -Force
 
@@ -757,14 +755,14 @@ Remove-Item  $localpath  -Recurse -Force
 $ErrorActionPreference = 'SilentlyContinue'
 Add-Content $networkshare\CRA_Collection.log "$logtime - SUCCESS : $myFQDN has been audited. The collection archive was moved to $networkshare"
 exit
-#}
+}
 
-#Else
-#{
+Else
+{
 # Write to failure to logfile
-#$ErrorActionPreference = 'SilentlyContinue'
-#Add-Content $networkshare\CRA_Collection.log "$logtime - FAILURE : A previous collection for $myFQDN was found at the networkshare. Script terminated on $myFQDN"
-#exit
-#}
+$ErrorActionPreference = 'SilentlyContinue'
+Add-Content $networkshare\CRA_Collection.log "$logtime - FAILURE : A previous collection for $myFQDN was found at the networkshare. Script terminated on $myFQDN"
+exit
+}
 
 # End of Script sds.073120
