@@ -1,6 +1,6 @@
 # Cyber Risk Assessment (CRA) FULL - Copyright @2017 All Rights Reserved
 # Updated by Shane Shook 
-$version="20200429"
+$version="20200731"
 # Runas:  PowerShell.exe -ExecutionPolicy bypass -WindowStyle hidden -File (path to script) 
 
 Clear-Host
@@ -22,8 +22,8 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 
 # Check if marker file exists, used to control script execution when linked to GPO/Login 
-If (-Not (Test-Path $outputfile.trim() ))
-{
+# If (-Not (Test-Path $outputfile.trim() )) # REMOVED FOR FURTHER TESTING SDS
+# {
 
 # PREPARATION
 
@@ -757,13 +757,14 @@ Remove-Item  $localpath  -Recurse -Force
 $ErrorActionPreference = 'SilentlyContinue'
 Add-Content $networkshare\CRA_Collection.log "$logtime - SUCCESS : $myFQDN has been audited. The collection archive was moved to $networkshare"
 exit
-}
+#}
 
-Else
-{
+#Else
+#{
 # Write to failure to logfile
-$ErrorActionPreference = 'SilentlyContinue'
-Add-Content $networkshare\CRA_Collection.log "$logtime - FAILURE : A previous collection for $myFQDN was found at the networkshare. Script terminated on $myFQDN"
-exit
-}
+#$ErrorActionPreference = 'SilentlyContinue'
+#Add-Content $networkshare\CRA_Collection.log "$logtime - FAILURE : A previous collection for $myFQDN was found at the networkshare. Script terminated on $myFQDN"
+#exit
+#}
 
+# End of Script sds.073120
