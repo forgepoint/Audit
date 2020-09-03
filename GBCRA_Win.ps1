@@ -1,6 +1,6 @@
-# Cyber Risk Assessment (CRA) FULL - Copyright @2017 All Rights Reserved
+# Cyber Compromise Audit (CRA) FULL - Copyright @2017 All Rights Reserved
 # Updated by Shane Shook 
-$version="20200731"
+$version="20200902" 
 # Runas:  PowerShell.exe -ExecutionPolicy bypass -WindowStyle hidden -File (path to script) 
 
 Clear-Host
@@ -22,7 +22,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 
 # Check if marker file exists, used to control script execution when linked to GPO/Login 
-If (-Not (Test-Path $outputfile.trim() )) 
+If (-Not (Test-Path $outputfile.trim() ))
 {
 
 # PREPARATION
@@ -677,7 +677,7 @@ select @{Name='Computername';Expression={ $env:COMPUTERNAME }},
 @{Name='ProcessName';Expression={ $_.processname }} | 
     where-object {$_.LogonType -like '3' -or $_.LogonType -like '4' -or $_.LogonType -like '8' -or $_.LogonType -like '10'} | 
     where-object {$_.IpAddress -notlike '-'} |
-	where-object {$_.processname -notlike '-'} | 
+	where-object {$_.processname -notlike '-'} |
 export-csv -path $localpath\"$env:computername"-remotelogons.csv -Encoding UTF8 -NoTypeInformation
 
 ## SERVICES
@@ -704,7 +704,8 @@ select @{Name='Computername';Expression={ $env:COMPUTERNAME }},
 @{Name='ServiceAccount';Expression={ $_.serviceaccount }} | 
 export-csv -path $localpath\"$env:computername"-secsvcstart.csv -Encoding UTF8 -NoTypeInformation
 
-# 21) NEW System Logged Services$ErrorActionPreference = 'SilentlyContinue'
+# 21) NEW System Logged Services
+$ErrorActionPreference = 'SilentlyContinue'
 $Events = Get-WinEvent -FilterHashtable @{Logname=’System’; ID=7045}
 ForEach ($Event in $Events) { 
 $eventXML = [xml]$Event.ToXml() 
@@ -723,6 +724,20 @@ select @{Name='Computername';Expression={ $env:COMPUTERNAME }},
 @{Name='ServiceType';Expression={ $_.servicetype }},
 @{Name='ServiceStartType';Expression={ $_.starttype }} | 
 export-csv -path $localpath\"$env:computername"-syssvcstart.csv -Encoding UTF8 -NoTypeInformation
+
+# 22) Missing Patches
+$ErrorActionPreference = 'SilentlyContinue'
+$Patches = @(
+$MUS = New-Object -com Microsoft.Update.Session
+$Usearch = $MUS.CreateUpdateSearcher()
+$Usresult = $Usearch.Search("IsInstalled=0 and Type='Software'")
+ForEach ($update in $Usresult.Updates){
+$update | select  @{Name='Computername';Expression={ $env:COMPUTERNAME }},
+@{Name='AuditDate';Expression={ Get-Date -Uformat %s   }},
+@{Name='Patch';Expression={ $Update.Title }}
+})  
+$Patches | ConvertTo-CSV -NoTypeInformation |
+Out-File $localpath\"$env:computername"-patches.csv -Encoding UTF8 
 
 
 ## CLEANUP
@@ -748,6 +763,8 @@ $ErrorActionPreference = 'SilentlyContinue'
 Move-Item $localpath\*.zip $networkshare -Force
 
 # REMOVE Files and Folder
+#invoke-command -scriptblock {del $localpath\*.csv}
+#invoke-command -scriptblock {rmdir $localpath}
 $ErrorActionPreference = 'SilentlyContinue'
 Remove-Item  $localpath  -Recurse -Force
 
@@ -765,4 +782,3 @@ Add-Content $networkshare\CRA_Collection.log "$logtime - FAILURE : A previous co
 exit
 }
 
-# End of Script sds.073120
