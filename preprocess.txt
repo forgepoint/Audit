@@ -1,0 +1,70 @@
+Preprocess Instructions
+-------------------------
+1. Copy client zip file to client folder
+2. Ensure 7za.exe, wget.exe, sqlite3.exe, schema_<date>.sql, and update_<date>.sql are in the client folder
+3. Run this command to unzip the data:
+
+FOR /R %I IN (*.zip *.7z *.7z.*) DO (..\7Za x "%I" -aoa -o"%~dpI\*" |FIND "Everything is Ok" >nul &&DEL "%I" ||ECHO.%I : EXTRACT FAIL - ARC NOT DELETED >>ERR.TXT)
+
+4.  Run EACH of the following commands to consolidate the data:
+
+md data 
+FOR /R %I IN (*-ad_usersview.csv) DO (TYPE "%I" >> .\data\AD_Usersview.csv) 
+FOR /R %I IN (*-ad_groupmembersview.csv) DO (TYPE "%I" >> .\data\AD_Groupmembersview.csv) 
+FOR /R %I IN (*-ad_computersview.csv) DO (TYPE "%I" >> .\data\AD_Computersview.csv) 
+FOR /R %I IN (*-allfiles.csv) DO (TYPE "%I" >> .\data\allfiles.csv) 
+FOR /R %I IN (*-allprofiles.csv) DO (TYPE "%I" >> .\data\allprofiles.csv) 
+FOR /R %I IN (*-osinfo.csv) DO (TYPE "%I" >> .\data\osinfo.csv)
+FOR /R %I IN (*-allusers.csv) DO (TYPE "%I" >> .\data\allusers.csv) 
+FOR /R %I IN (*-allusers_reg.csv) DO (TYPE "%I" >> .\data\allusers_reg.csv) 
+FOR /R %I IN (*-amcache.csv) DO (TYPE "%I" >> .\data\amcache.csv) 
+FOR /R %I IN (*-dnscache.csv) DO (TYPE "%I" >> .\data\dnscache.csv) 
+FOR /R %I IN (*-netstat.csv) DO (TYPE "%I" >> .\data\netstat.csv) 
+FOR /R %I IN (*-nic.csv) DO (TYPE "%I" >> .\data\nic.csv) 
+FOR /R %I IN (*-prefetch.csv) DO (TYPE "%I" >> .\data\prefetch.csv) 
+FOR /R %I IN (*-prefetchdetails.csv) DO (TYPE "%I" >> .\data\prefetchdetails.csv) 
+FOR /R %I IN (*-processes.csv) DO (TYPE "%I" >> .\data\processes.csv) 
+FOR /R %I IN (*-remotelogons.csv) DO (TYPE "%I" >> .\data\remotelogons.csv) 
+FOR /R %I IN (*-secsvcstart.csv) DO (TYPE "%I" >> .\data\secsvcstart.csv) 
+FOR /R %I IN (*-servicedlls.csv) DO (TYPE "%I" >> .\data\servicedlls.csv) 
+FOR /R %I IN (*-services.csv) DO (TYPE "%I" >> .\data\services.csv) 
+FOR /R %I IN (*-startups.csv) DO (TYPE "%I" >> .\data\startups.csv) 
+FOR /R %I IN (*-syssvcstart.csv) DO (TYPE "%I" >> .\data\syssvcstart.csv) 
+FOR /R %I IN (*-tasks.csv) DO (TYPE "%I" >> .\data\tasks.csv) 
+FOR /R %I IN (*-usbdev.csv) DO (TYPE "%I" >> .\data\usbdev.csv) 
+FOR /R %I IN (*-usbsn.csv) DO (TYPE "%I" >> .\data\usbsn.csv) 
+FOR /R %I IN (*-usbstorage.csv) DO (TYPE "%I" >> .\data\usbstorage.csv) 
+
+
+5. Next get a unique remoteIP address set from netstat.csv:
+
+md .\data\ipout
+powershell "import-csv netstat.csv | where-object {$_.remoteaddress -notlike '10.*' -and $_.remoteaddress -notlike '`*' -and $_.remoteaddress -notlike '169.*' -and $_.remoteaddress -notlike '127.*' -and $_.remoteaddress -notlike '0.0.*' -and $_.remoteaddress -notlike '172.*' -and $_.remoteaddress -notlike '192.168.*' -and $_.remoteaddress -notlike 'remoteaddress' -and $_.remoteaddress -notlike '*:*'} | select-object -Unique {$_.remoteaddress} | export-csv ips.csv -NoTypeInformation -Encoding ASCII"
+mv ips.csv .\data\ipout
+cd .\data\ipout
+for /f %i in (..\ipout.csv) do @..\wget.exe http://api.ipstack.com/%i?access_key=2b3751637ebe941e57a10ee9776864cc
+(note account limited to 10k lookups per day: ipstack.com sdshook@yahoo.com 1pstack2020!  2b3751637ebe941e57a10ee9776864cc  and cleanup the data to the load schema)
+
+use https://traceroute-online.com/ip-asn-lookup/ for bulk ip address lookups to asn.csv
+
+move ips.csv ..\
+type * *.* >> ..\data\geoip.csv
+cd ..
+
+(then remove the ipout directory)
+
+
+6. Run these command to ETL the data in the sqlite database: 
+
+sqlite3.exe risks.sqlite
+   >> .read schema_<date>.sql
+   ctrl+c
+sqlite3.exe risks.sqlite vacuum
+
+7.  Using sqlite browser or CLI review the investigate table and remove obvious false positives, then run the update_<date>.sql script and save changes in DB
+
+8.  Open the metabase and review all charts
+
+java -jar metabase.jar 
+chrome.exe http://localhost:3000
+
